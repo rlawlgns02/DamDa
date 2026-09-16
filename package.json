@@ -1,0 +1,1 @@
+{"name":"fold-card-mockup","version":"1.0.0","private":true,"scripts":{"dev":"node server.cjs","start":"node server.cjs","check":"node --check dist/app.js && node --check dist/sharing-ui.js && node --check dist/card-export.js && node --check card-store.cjs && node --check server.cjs","test":"node verify.cjs && node verify-sharing.cjs"},"dependencies":{"qrcode":"^1.5.4"}}
