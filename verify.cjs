@@ -7,7 +7,7 @@ const session = new Map();
 const context = vm.createContext({document:{getElementById:element,querySelector(){return element('query');}},location:{hash:'#login',href:'http://localhost:5173/#home'},sessionStorage:{getItem:k=>session.get(k),setItem:(k,v)=>session.set(k,v)},localStorage:{getItem(){return null;},setItem(){},removeItem(){}},window:{addEventListener(){},scrollTo(){}},TextEncoder,TextDecoder,Uint8Array,btoa:s=>Buffer.from(s,'binary').toString('base64'),atob:s=>Buffer.from(s,'base64').toString('binary'),setTimeout,clearTimeout,console});
 vm.runInContext(fs.readFileSync('dist/sharing-ui.js','utf8'),context);
 vm.runInContext(fs.readFileSync('dist/app.js','utf8'),context);
-assert.match(element('app').innerHTML,/FOLD/);
+assert.match(element('app').innerHTML,/DamDa/);
 const submit = () => element('app').submit({preventDefault(){},target:{id:'login-form'}});
 element('login-id').value='admin';element('login-password').value='wrong';submit();assert.match(element('form-error').innerHTML,/확인/);assert.equal(context.location.hash,'#login');
 element('login-password').value='1234';submit();assert.equal(context.location.hash,'home');assert.equal(session.get('fold-session'),'true');

@@ -13,6 +13,7 @@ function createServer({directory=path.join(__dirname,'data','cards')}={}) {
   const server=http.createServer(async(req,res)=>{
     const json=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'}).end(JSON.stringify(data));};
     res.setHeader('X-Content-Type-Options','nosniff');
+    res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'");
     res.setHeader('Referrer-Policy','no-referrer');
     let url;
     try {url=new URL(req.url,'http://localhost');} catch {return json(400,{error:'잘못된 주소예요.'});}
@@ -35,7 +36,7 @@ function createServer({directory=path.join(__dirname,'data','cards')}={}) {
           if(!origins.includes(origin))return json(400,{error:'공유 주소를 확인해 주세요.'});
           const target=origin+'/#card?id='+match[1];
           const png=await QRCode.toBuffer(target,{type:'png',width:600,margin:4,errorCorrectionLevel:'M'});
-          res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'no-store',...(url.searchParams.has('download')?{'Content-Disposition':'attachment; filename="FOLD-QR.png"'}:{})}).end(png);return;
+          res.writeHead(200,{'Content-Type':'image/png','Cache-Control':'no-store',...(url.searchParams.has('download')?{'Content-Disposition':'attachment; filename="DamDa-QR.png"'}:{})}).end(png);return;
         }
         return json(200,data);
       }
@@ -46,17 +47,17 @@ function createServer({directory=path.join(__dirname,'data','cards')}={}) {
       if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
       try {
         const bytes=await fs.readFile(file);
-        res.writeHead(200,{'Content-Type':({'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml'})[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'}).end(req.method==='HEAD'?undefined:bytes);
+        res.writeHead(200,{'Content-Type':({'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'})[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'}).end(req.method==='HEAD'?undefined:bytes);
       } catch {res.writeHead(404).end('Not found');}
-    }catch(error){console.error('FOLD request failed:',error.code||error.message);if(!res.headersSent)json(500,{error:'저장 공간이나 서버 상태를 확인하고 다시 시도해 주세요.'});else res.end();}
+    }catch(error){console.error('DamDa request failed:',error.code||error.message);if(!res.headersSent)json(500,{error:'저장 공간이나 서버 상태를 확인하고 다시 시도해 주세요.'});else res.end();}
   });
   return server;
 }
 if(require.main===module){
   const server=createServer();let port=Number(process.env.PORT||5173),retries=0;
   if(!Number.isInteger(port)||port<1||port>65535){console.error('PORT must be an integer between 1 and 65535.');process.exit(1);}
-  server.on('error',error=>{if(error.code==='EADDRINUSE'&&retries++<10&&port<65535){console.log(`Port ${port} is already in use. Trying ${++port}...`);server.listen(port,'0.0.0.0');return;}console.error(`Unable to start FOLD: ${error.message}`);process.exitCode=1;});
-  server.on('listening',()=>{console.log(`FOLD: http://127.0.0.1:${port}`);networkAddresses().forEach(n=>console.log(`Same Wi-Fi (${n.name}): http://${n.address}:${port}`));});
+  server.on('error',error=>{if(error.code==='EADDRINUSE'&&retries++<10&&port<65535){console.log(`Port ${port} is already in use. Trying ${++port}...`);server.listen(port,'0.0.0.0');return;}console.error(`Unable to start DamDa: ${error.message}`);process.exitCode=1;});
+  server.on('listening',()=>{console.log(`DamDa: http://127.0.0.1:${port}`);networkAddresses().forEach(n=>console.log(`Same Wi-Fi (${n.name}): http://${n.address}:${port}`));});
   server.listen(port,'0.0.0.0');
 }
 module.exports={createServer};

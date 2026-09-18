@@ -1,0 +1,48 @@
+const {chromium}=require('playwright');
+const {createServer}=require('./server.cjs');
+const {normalizeCard}=require('./card-store.cjs');
+const fs=require('node:fs/promises'),os=require('node:os'),path=require('node:path'),assert=require('node:assert/strict');
+(async()=>{
+ const directory=await fs.mkdtemp(path.join(os.tmpdir(),'damda-studio-'));
+ const server=createServer({directory});await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ let browser;
+ try{
+ browser=await chromium.launch({channel:process.env.DAMDA_BROWSER_CHANNEL||'msedge',headless:true});
+ const context=await browser.newContext({viewport:{width:1440,height:1100}}),page=await context.newPage(),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ const base='http://127.0.0.1:'+server.address().port;
+ await page.goto(base);await page.getByRole('button',{name:'계정 입력',exact:true}).click();await page.locator('.login-submit').click();await page.waitForURL('**/#home');
+ assert.equal(await page.locator('select').count(),0);
+ await page.locator('[data-setting="photo-shape"][value="circle"]').check();
+ assert.match(await page.locator('#profile-avatar .damda-avatar').getAttribute('style'),/50%/);
+ await page.locator('[data-setting="photo-size"][value="large"]').check();
+ assert.match(await page.locator('#profile-avatar .damda-avatar').getAttribute('style'),/80px/);
+ await page.locator('[data-studio="settings"]').click();
+ await page.locator('[data-setting="appearance"][value="dark"]').check();assert.equal(await page.locator('html').getAttribute('data-appearance'),'dark');
+ await page.locator('[data-setting="language"][value="en"]').check();assert.equal(await page.locator('html').getAttribute('lang'),'en');assert(await page.locator('#studio-settings').evaluate(e=>e.open));
+ await page.locator('[data-setting="motion-preference"][value="reduced"]').check();assert.equal(await page.locator('html').getAttribute('data-motion'),'reduced');
+ await page.locator('[data-setting="appearance"][value="light"]').check();await page.locator('[data-setting="language"][value="ko"]').check();await page.locator('[data-studio="close-settings"]').click();
+ await page.locator('[data-preset-action="edit"]').first().click();assert.equal(await page.locator('select').count(),0);await page.locator('[name="presetIdentity"][value="nickname"]').check();await page.locator('[data-preset-action="cancel"]').click();
+ await page.locator('#back-title').fill('반가워요, 함께 만들어요.');await page.locator('#back-message').fill('좋은 연결의 시작\nhello@example.com');
+ await page.locator('[data-setting="back-color"][value="mint"]').check();await page.locator('[data-setting="back-pattern"][value="grid"]').check();
+ await page.locator('[data-studio="preview-back"]').click();assert.match(await page.locator('#live-card .studio-rotator').getAttribute('style'),/180deg/);
+ await page.screenshot({path:'studio-desktop.png',fullPage:true});
+ await page.locator('#live-card [data-studio="front"]').click();
+ const stage=page.locator('#live-card .studio-stage');await stage.scrollIntoViewIfNeeded();const box=await stage.boundingBox();await page.mouse.move(box.x+box.width/2,box.y+100);await page.mouse.down();await page.mouse.move(box.x+box.width/2+110,box.y+150,{steps:8});await page.mouse.up();assert.notEqual(await stage.getAttribute('data-y'),'0');
+ await page.locator('#live-card [data-studio="reset"]').click();await stage.focus();await page.keyboard.press('ArrowRight');assert.equal(await stage.getAttribute('data-y'),'15');
+ await page.reload();assert.equal(await page.locator('#back-title').inputValue(),'반가워요, 함께 만들어요.');
+ await page.locator('[data-action="share"]').click();await page.locator('#share-url').waitFor();
+ const shared=await page.locator('#share-url').inputValue(),hash=new URL(shared).hash;
+ const recipient=await context.newPage();await recipient.goto(base+'/'+hash);await recipient.locator('.studio-back-copy').waitFor();assert.match(await recipient.locator('.studio-back-copy').innerText(),/함께 만들어요/);assert.equal(await recipient.locator('select').count(),0);
+ await recipient.locator('[data-studio="back"]').click();assert.match(await recipient.locator('.studio-rotator').getAttribute('style'),/180deg/);
+ await page.locator('a[href="#book"]').first().click();assert.equal(await page.locator('select').count(),0);assert(await page.locator('[data-move-card]').count());
+ const mobile=await browser.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true});const phone=await mobile.newPage();phone.on('pageerror',e=>errors.push(e.message));await phone.goto(base);await phone.getByRole('button',{name:'계정 입력',exact:true}).click();await phone.locator('.login-submit').click();await phone.waitForURL('**/#home');
+ assert(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+ await phone.locator('#live-card .studio-stage').scrollIntoViewIfNeeded();const touchBox=await phone.locator('#live-card .studio-stage').boundingBox();const cdp=await mobile.newCDPSession(phone);
+ await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:touchBox.x+60,y:touchBox.y+80}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:touchBox.x+180,y:touchBox.y+100}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.notEqual(await phone.locator('#live-card .studio-stage').getAttribute('data-y'),null);
+ await phone.locator('#live-card [data-studio="reset"]').click();await phone.screenshot({path:'studio-mobile.png',fullPage:true});
+ await phone.locator('[data-studio="settings"]').click();await phone.screenshot({path:'studio-settings.png'});await phone.keyboard.press('Escape');assert.equal(await phone.locator('#studio-settings').evaluate(e=>e.open),false);
+ const valid={name:'Test',fields:[],back:{title:'Hi',message:'Line one\nLine two',color:'mint',pattern:'grid'}};assert.deepEqual(normalizeCard(valid).back,valid.back);assert.throws(()=>normalizeCard({...valid,back:{title:'x'.repeat(61)}}));assert.equal(normalizeCard({...valid,back:{pattern:'<script>'}}).back.pattern,'orbits');
+ assert.deepEqual(errors,[]);console.log('PASS: no dropdowns; settings, language, theme, motion, photo choices, preset radio form, back edit/reload/API sharing, mouse/touch/keyboard rotation, collection, mobile overflow, modal Escape, validation, no browser errors.');
+ }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));await fs.rm(directory,{recursive:true,force:true});}
+})().catch(e=>{console.error(e);process.exitCode=1;});

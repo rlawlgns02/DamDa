@@ -3,3 +3,9 @@ data/
 .sharing-test-*/
 *.tar.gz
 *.tgz
+todo.md
+# Local browser validation dependencies and screenshots
+.tmp-browser/
+studio-desktop.png
+studio-mobile.png
+studio-settings.png

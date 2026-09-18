@@ -1,0 +1,13 @@
+﻿const $=s=>document.querySelector(s);let timer;
+function notice(s){$('#notice').textContent=s;$('#notice').hidden=false;clearTimeout(timer);timer=setTimeout(()=>$('#notice').hidden=true,3500);}
+function page(){const book=location.hash==='#book';$('#my').hidden=book;$('#book').hidden=!book;$('#breadcrumb').textContent=book?'명함함':'내 명함';document.querySelectorAll('[data-page]').forEach(b=>b.classList.toggle('active',b.dataset.page===(book?'book':'my')));}
+document.querySelectorAll('[data-page]').forEach(b=>b.onclick=()=>location.hash=b.dataset.page);
+window.addEventListener('hashchange',page);page();
+$('#mobile').onclick=()=>{const m=$('#canvas').classList.toggle('mobile');$('#mobile').textContent=m?'데스크톱 보기':'모바일 보기';};
+$('#theme').onclick=()=>{const d=document.body.classList.toggle('dark');$('#theme').textContent=d?'라이트 모드':'다크 모드';};
+function update(){const key=$('#identity').value;$('#card-name').textContent=$(key==='nickname'?'#mock-nickname':'#mock-name').value;for(const key of ['job','company','email','phone']){$('#card-'+key).textContent=$('#'+key).value;$('#card-'+key).hidden=!$('[data-field="'+key+'"]').checked;}const shape={rounded:'20%',circle:'50%',square:'0'}[$('#shape').value],size={small:40,medium:56,large:80}[$('#size').value];$('#card-avatar').style.borderRadius=shape;$('#avatar').style.borderRadius=shape;$('#card-avatar').style.width=size+'px';$('#card-avatar').style.height=size+'px';}
+document.querySelectorAll('input,select').forEach(el=>el.addEventListener('input',update));
+document.querySelectorAll('[data-preset]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-preset]').forEach(x=>x.classList.toggle('active',x===b));for(const k of ['job','company','email','phone'])$('[data-field="'+k+'"]').checked=b.dataset.preset==='work'?k!=='phone':b.dataset.preset==='friend'?k==='phone':k==='email'||k==='phone';update();});
+document.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-tab]').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('[data-group]').forEach(c=>c.hidden=b.dataset.tab!=='all'&&c.dataset.group!==b.dataset.tab);});
+$('#photo-button').onclick=()=>$('#mock-photo').click();let photoUrl;
+$('#mock-photo').onchange=e=>{const f=e.target.files[0];if(!f)return;if(!['image/png','image/jpeg','image/webp'].includes(f.type)||f.size>2*1024*1024){notice('2MB 이하의 PNG, JPG, WebP 사진을 선택해 주세요.');return;}if(photoUrl)URL.revokeObjectURL(photoUrl);photoUrl=URL.createObjectURL(f);for(const id of ['avatar','card-avatar']){const el=$('#'+id);el.textContent='';el.style.backgroundImage='url("'+photoUrl+'")';el.style.backgroundSize='cover';el.style.backgroundPosition='center';}};

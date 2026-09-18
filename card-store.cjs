@@ -13,7 +13,9 @@ function normalizeCard(raw) {
   const photo = raw.photo || '';
   if (typeof photo !== 'string' || photo.length > 2800000 || (photo && !/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(photo))) throw new Error('사진 형식을 확인해 주세요.');
   if (!name && !fields.length) throw new Error('공개할 정보를 하나 이상 선택해 주세요.');
-  return {name,showName,theme:['light','dark','mint'].includes(raw.theme)?raw.theme:'light',photo,fields};
+  const source=raw.back&&typeof raw.back==='object'?raw.back:{};
+  const back={title:text(source.title??'Nice to meet you.',60),message:text(source.message??'',240),color:['blue','dark','mint','light'].includes(source.color)?source.color:'blue',pattern:['plain','orbits','grid'].includes(source.pattern)?source.pattern:'orbits'};
+  return {back,name,showName,theme:['light','dark','mint','blue'].includes(raw.theme)?raw.theme:'light',photo,photoShape:['circle','rounded','square'].includes(raw.photoShape)?raw.photoShape:'circle',photoSize:['small','medium','large'].includes(raw.photoSize)?raw.photoSize:'medium',fields};
 }
 function createStore(directory) {
   return {

@@ -1,0 +1,30 @@
+﻿
+/* Short, purposeful motion. No looping movement; OS and app preferences are respected. */
+:root{--damda-ease:cubic-bezier(.2,.7,.25,1);--damda-fast:180ms}
+.damda-logo,.brand{transition:color 180ms ease;transform-origin:left center}
+.damda-logo img,.brand img{transition:transform 420ms var(--damda-ease),filter 420ms var(--damda-ease);will-change:auto}
+.damda-logo>span{transition:transform 300ms var(--damda-ease)}
+.damda-pages a,.preset-item,.preset-item-actions button,.category-tabs button,.secondary,.primary{transition:background-color 180ms ease,color 180ms ease,border-color 180ms ease,box-shadow 220ms ease,transform 200ms var(--damda-ease)}
+.damda-form-grid input,.damda-form-grid select,.damda-detail-fields input,.preset-edit-form input,.preset-edit-form select{transition:border-color 180ms ease,box-shadow 180ms ease,background-color 180ms ease}
+.damda-settings select,.organizer-nav select{transition:border-color 180ms ease,box-shadow 180ms ease}
+.damda-main>.damda-heading{animation:damda-reveal 300ms var(--damda-ease) both}
+.damda-editor,.damda-main>.book-grid{animation:damda-reveal 360ms var(--damda-ease) both}
+.preset-edit-form{animation:damda-reveal 220ms var(--damda-ease) both}
+.book-entry{transition:transform 240ms var(--damda-ease),box-shadow 240ms ease,border-color 200ms ease}
+.damda-avatar{transition:border-radius 240ms var(--damda-ease),width 240ms var(--damda-ease),height 240ms var(--damda-ease)}
+.primary:active,.secondary:active,.preset-select:active,.preset-item-actions button:active{transform:scale(.98)}
+.damda-logo:focus-visible img,.brand:focus-visible img{transform:translateY(-3px) rotate(-6deg) scale(1.08);filter:drop-shadow(0 5px 6px #1762db26)}
+@media(hover:hover) and (pointer:fine){
+ .damda-logo:hover img,.brand:hover img{transform:translateY(-3px) rotate(-6deg) scale(1.08);filter:drop-shadow(0 5px 6px #1762db26)}
+ .damda-logo:hover>span{transform:translateX(2px)}
+ .damda-pages a:hover{transform:translateX(3px);background:#edf1ff;color:#3156dc}
+ .preset-item:hover{border-color:#9badde;box-shadow:0 3px 10px #1c35670b}
+ .book-entry:hover{transform:translateY(-3px);box-shadow:0 12px 25px -18px #1e356f50}
+ .secondary:hover{transform:translateY(-1px)}
+ :root[data-appearance=dark] .damda-pages a:hover{background:#293b60;color:#b8cbff}
+}
+@keyframes damda-reveal{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+:root[data-motion=reduced] *,:root[data-motion=reduced] *::before,:root[data-motion=reduced] *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+:root[data-motion=reduced] .damda-logo img,:root[data-motion=reduced] .brand img,:root[data-motion=reduced] .damda-logo>span,:root[data-motion=reduced] .damda-pages a,:root[data-motion=reduced] .book-entry,:root[data-motion=reduced] button{transform:none!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.damda-logo img,.brand img,.damda-logo>span,.damda-pages a,.book-entry,button{transform:none!important}}
+

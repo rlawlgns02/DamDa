@@ -1,1 +1,18 @@
-{"name":"fold-card-mockup","version":"1.0.0","private":true,"scripts":{"dev":"node server.cjs","start":"node server.cjs","check":"node --check dist/app.js && node --check dist/sharing-ui.js && node --check dist/card-export.js && node --check card-store.cjs && node --check server.cjs","test":"node verify.cjs && node verify-sharing.cjs"},"dependencies":{"qrcode":"^1.5.4"}}
+{
+  "name": "damda-card",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "node server.cjs",
+    "start": "node server.cjs",
+    "check": "node --check dist/app.js && node --check dist/sharing-ui.js && node --check dist/card-export.js && node --check card-store.cjs && node --check server.cjs && node --check dist/organizer.js && node --check dist/enhancements.js && node --check dist/i18n.js && node --check dist/mockup.js && node --check dist/workspace-view.js && node --check dist/presets-ui.js && node --check dist/motion.js && node --check dist/studio-ui.js",
+    "test": "node verify.cjs && node verify-sharing.cjs && node verify-enhancements.cjs",
+    "test:browser": "node verify-studio.cjs"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "playwright": "^1.63.0"
+  }
+}
