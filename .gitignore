@@ -9,3 +9,9 @@ todo.md
 studio-desktop.png
 studio-mobile.png
 studio-settings.png
+
+# Generated static deployment output
+_site/
+
+# User-provided reference screenshots
+imgae_file/

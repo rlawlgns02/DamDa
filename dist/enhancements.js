@@ -1,5 +1,5 @@
 ﻿'use strict';
-const organizer=DamDaOrganizer.create({getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)});
+let organizer=DamDaOrganizer.create({getItem:k=>localStorage.getItem(k),setItem:(k,v)=>localStorage.setItem(k,v)});
 let bookTab='전체',selectedPreset='';
 const baseToast=toast,baseError=error;
 const baseRender=render,baseDashboard=dashboard,baseCard=card,baseSnapshot=selectedSnapshot,baseReceived=renderReceived,baseSharePanel=showShare;
@@ -26,7 +26,7 @@ return html;
 function nav(){return '<nav class="organizer-nav" aria-label="DamDa"><div>'+(signedIn?'<a href="#home">'+tr('내 명함')+'</a><a href="#book">'+tr('명함함')+'</a>':'')+'</div><div><label>'+tr('화면 모드')+' <select id="appearance">'+options([['system','시스템 설정'],['light','라이트'],['dark','다크']],appearance)+'</select></label><label>'+tr('언어')+' <select id="language">'+options([['ko','한국어'],['en','English']],language)+'</select></label></div></nav>';}
 function decorate(){const h=app.querySelector('header');if(h&&!app.querySelector('.organizer-nav'))h.insertAdjacentHTML('afterend',nav());localize();}
 function resumeSave(){const pending=read('damda-pending-card',null);if(!signedIn||!pending)return;if(guard(()=>{organizer.add(pending.data,pending.id);sessionStorage.removeItem('damda-pending-card');return true;})){location.hash='book';notify('받은 명함을 명함함에 저장했어요.','Card saved to your collection.');}}
-render=function(){if(signedIn)resumeSave();if(location.hash.split('?')[0]==='#book'){if(!signedIn){location.hash='login';return;}renderBook();}else baseRender();decorate();};
+render=function(){if(document.documentElement?.dataset?.hosting==='cloud'&&!window.DamDaCloudStore)return;if(signedIn)resumeSave();if(location.hash.split('?')[0]==='#book'){if(!signedIn){location.hash='login';return;}renderBook();}else baseRender();decorate();};
 renderReceived=async function(){await baseReceived();if(receivedCard&&location.hash.startsWith('#card'))app.querySelector('.download-actions')?.insertAdjacentHTML('beforeend','<button class="secondary" data-extra="save-received">'+tr('명함함에 저장')+'</button>');decorate();};
 showShare=function(){baseSharePanel();app.querySelector('.share-actions')?.insertAdjacentHTML('beforeend','<button class="secondary" data-extra="save-own">'+tr('저장 후 공유')+'</button>');localize();};
 function newId(){if(crypto.randomUUID)return 'local-'+crypto.randomUUID();return 'local-'+Array.from(crypto.getRandomValues(new Uint8Array(16)),v=>v.toString(16).padStart(2,'0')).join('');}
