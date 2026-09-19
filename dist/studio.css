@@ -6,3 +6,9 @@
 
 /* Keep settings centered in the viewport, independent of the workspace grid. */
 .studio-dialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;overflow-y:auto;overscroll-behavior:contain}.studio-dialog::backdrop{overscroll-behavior:contain}@media(max-width:720px){.studio-dialog{inset:auto 0 0;margin:0 auto;width:100%;max-height:calc(100dvh - 24px);border-radius:24px 24px 0 0;padding:24px 22px max(24px,env(safe-area-inset-bottom))}}
+/* Desktop: breadcrumb, account save status, then settings at the right edge. */
+@media(min-width:721px){
+ .damda-topbar>.damda-breadcrumb{order:0}
+ .damda-topbar>#cloud-save-status{order:1}
+ .damda-topbar>.damda-settings{order:2}
+}

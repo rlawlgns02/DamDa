@@ -104,3 +104,7 @@ test:cloud는 실제 Supabase SDK와 모의 API로 화면 흐름을 검증합니
 - [작업 변경 기록](CHANGELOG-task.md)
 - [초기 개발 계획서](명함%20교환기%20앱%20개발%20계획서.md)
 
+
+### 운영 화면 로컬 미리보기
+
+`npm run preview:pages`는 운영 빌드를 만든 뒤 http://127.0.0.1:4173/DamDa/ 에서 제공합니다. GitHub Pages와 같은 CSP와 경로를 사용하며 Live Server 스크립트를 삽입하지 않습니다. 실제 설정된 Supabase DB에 연결됩니다. `dist/` 수정 후 다른 터미널에서 `npm run build:pages`를 실행하고 새로고침하세요. 종료는 Ctrl+C입니다. 비밀번호 재설정 테스트 시 Supabase Redirect URLs에 `http://127.0.0.1:4173/DamDa/?auth=recovery`도 등록하세요.
