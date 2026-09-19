@@ -91,3 +91,5 @@
 #card-group-new-row[hidden]{display:none}
 #card-group-new-row input{margin-top:8px}
 .card-object.interactive,.card-object.interactive *{-webkit-user-select:none;user-select:none;-webkit-user-drag:none}
+.login-form-area a.button.full{min-height:52px;justify-content:space-between;margin-top:12px;background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.login-form-area a.button.full:hover{background:var(--accent,#c3ef62);color:#202622;border-color:var(--accent,#c3ef62)}
