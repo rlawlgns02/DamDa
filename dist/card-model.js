@@ -1,0 +1,22 @@
+(function(root){
+ 'use strict';
+ const fieldMap={role:'직업',company:'회사',email:'이메일',phone:'전화번호',website:'웹사이트',instagram:'Instagram'};
+ const colors=['paper','ink','lime','clay','blue','mint'],patterns=['plain','grid','stripes','orbits'];
+ const text=(v,n=100)=>typeof v==='string'?v.slice(0,n):'';
+ const photo=v=>typeof v==='string'&&/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(v)?v:'';
+ const empty=()=>({name:'',nickname:'',identity:'name',showName:true,role:'',company:'',email:'',phone:'',website:'',instagram:'',visible:['role','company','email'],photo:'',photoShape:'square',photoSize:'medium',color:'paper',layout:'editorial',backTitle:'Nice to meet you.',backMessage:'',backPattern:'grid',backColor:'ink',custom:[]});
+ function fromProfile(p={}){
+  const m=empty(),known=new Set();m.name=text(p.name,30);m.nickname=text(p.nickname,30);m.identity=p.nameMode==='nickname'?'nickname':'name';m.showName=p.showName!==false;m.visible=[];
+  const items=Array.isArray(p.fields)?p.fields:[];
+  for(const f of items){const id=Object.keys(fieldMap).find(k=>fieldMap[k]===f.label);if(id&&!known.has(id)){known.add(id);m[id]=text(f.value,120);if(f.selected!==false)m.visible.push(id);}else if(typeof f.label==='string')m.custom.push({label:text(f.label,30),value:text(f.value,120),selected:f.selected!==false});}
+  m.photo=photo(p.photo);m.photoShape=['square','portrait','circle','rounded'].includes(p.photoShape)?p.photoShape:'square';m.photoSize=['small','medium','large'].includes(p.photoSize)?p.photoSize:'medium';
+  const theme=({light:'paper',dark:'ink'})[p.theme]||p.theme;m.color=colors.includes(theme)?theme:'paper';m.layout=p.layout==='minimal'?'minimal':'editorial';
+  m.backTitle=typeof p.back?.title==='string'?text(p.back.title,60):m.backTitle;m.backMessage=text(p.back?.message,240);m.backColor=({light:'paper',dark:'ink'})[p.back?.color]||p.back?.color||'ink';if(!colors.includes(m.backColor))m.backColor='ink';m.backPattern=patterns.includes(p.back?.pattern)?p.back.pattern:'grid';return m;
+ }
+ function toProfile(m,original={}){return {...original,name:m.name,nickname:m.nickname,nameMode:m.identity,showName:m.showName,theme:({paper:'light',ink:'dark'})[m.color]||m.color,layout:m.layout,photo:m.photo,photoShape:m.photoShape,photoSize:m.photoSize,fields:[...Object.entries(fieldMap).map(([id,label])=>({label,value:m[id]||'',selected:m.visible.includes(id)})),...m.custom.map(f=>({...f}))],back:{...(original.back||{}),title:m.backTitle,message:m.backMessage,color:({paper:'light',ink:'dark'})[m.backColor]||m.backColor,pattern:m.backPattern}};}
+ function snapshot(m){const p=toProfile(m);return {name:m.showName?(m.identity==='nickname'?m.nickname:m.name):'',showName:m.showName,theme:p.theme,layout:p.layout,photo:p.photo,photoShape:p.photoShape,photoSize:p.photoSize,fields:p.fields.filter(f=>f.selected&&f.value.trim()).map(({label,value})=>({label,value})),back:p.back};}
+ function fromSnapshot(p){if(!p||typeof p.name!=='string'||!Array.isArray(p.fields)||p.fields.length>100||!p.fields.every(f=>typeof f.label==='string'&&typeof f.value==='string'))throw Error('Invalid card');if(p.photo&&!photo(p.photo))throw Error('Invalid card photo');return fromProfile(p);}
+ function decode(account){const o=account.organizer||{};if(!Array.isArray(o.cards)||!Array.isArray(o.tabs)||!Array.isArray(o.presets))throw Error('Invalid account');return {model:fromProfile(account.profile),collection:o.cards.map(c=>({...fromSnapshot(c.data),id:c.id,group:c.tab,savedAt:c.savedAt,_raw:c})),presets:o.presets.map(p=>({...p,visible:Object.keys(fieldMap).filter(k=>p.labels?.includes(fieldMap[k]))})),tabs:[...o.tabs]};}
+ function encode(model,collection,presets,tabs,original){return {profile:toProfile(model,original.profile),organizer:{...original.organizer,tabs:[...new Set(['미분류',...tabs,...collection.map(c=>c.group)])],cards:collection.map(c=>({...c._raw,id:c.id,tab:c.group,savedAt:c.savedAt||c._raw?.savedAt||new Date().toISOString(),data:c._raw?.data||snapshot(c)})),presets:presets.map(p=>({id:p.id||'preset-'+crypto.randomUUID(),name:p.name,labels:p.labels||p.visible.map(k=>fieldMap[k]).filter(Boolean),...(p.nameMode?{nameMode:p.nameMode}:{}),...(typeof p.showName==='boolean'?{showName:p.showName}:{})}))}};}
+ const api={fieldMap,empty,fromProfile,toProfile,snapshot,fromSnapshot,decode,encode};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DamDaModel=api;
+})(typeof globalThis!=='undefined'?globalThis:this);

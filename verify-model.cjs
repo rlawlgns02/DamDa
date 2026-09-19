@@ -1,0 +1,14 @@
+'use strict';
+const assert=require('node:assert/strict');
+const model=require('./dist/card-model.js');
+const legacy={profile:{name:'기존 이름',nickname:'닉네임',nameMode:'nickname',showName:true,theme:'blue',photo:'',photoShape:'circle',photoSize:'large',back:{title:'원래 제목',message:'원래 문구',color:'mint',pattern:'orbits'},fields:[{label:'직업',value:'Designer',selected:true},{label:'이메일',value:'public@example.com',selected:true},{label:'전화번호',value:'PRIVATE PHONE',selected:false},{label:'취미',value:'PRIVATE HOBBY',selected:false},{label:'Discord',value:'public-discord',selected:true}],futureField:{preserve:true}},organizer:{tabs:['미분류','동료'],cards:[{id:'legacy-id',tab:'동료',savedAt:'2026-01-01',data:{name:'받은 사람',fields:[{label:'이메일',value:'receiver@example.com'}],theme:'dark',back:{title:'안녕'}}}],presets:[{id:'original-preset',name:'게임',labels:['Discord'],nameMode:'nickname',showName:true}],otherSetting:'preserve'},revision:7};
+const decoded=model.decode(legacy);assert.equal(decoded.model.name,'기존 이름');assert.equal(decoded.model.color,'blue');assert.equal(decoded.model.photoShape,'circle');assert.equal(decoded.collection[0].group,'동료');
+const roundTrip=model.encode(decoded.model,decoded.collection,decoded.presets,decoded.tabs,legacy);
+assert.deepEqual(roundTrip.profile.futureField,{preserve:true});assert.equal(roundTrip.organizer.otherSetting,'preserve');assert.deepEqual(roundTrip.organizer.cards,legacy.organizer.cards);assert.deepEqual(roundTrip.organizer.presets,legacy.organizer.presets);
+const snapshot=model.snapshot(decoded.model);assert.equal(snapshot.name,'닉네임');assert(!JSON.stringify(snapshot).includes('PRIVATE'));assert(snapshot.fields.some(f=>f.label==='Discord'));assert.equal(snapshot.back.message,'원래 문구');assert(!('nickname' in snapshot));
+const received=model.fromSnapshot(snapshot);assert.equal(received.name,'닉네임');assert.equal(received.phone,'');assert(received.custom.some(f=>f.label==='Discord'&&f.selected));
+decoded.model.showName=false;assert.equal(model.snapshot(decoded.model).name,'');
+assert.throws(()=>model.fromSnapshot({name:'bad',fields:[],photo:'https://tracker.example/pixel'}),/photo/);
+assert.throws(()=>model.fromSnapshot({name:'bad',fields:[{label:1,value:'x'}]}),/Invalid/);
+const empty=model.empty();assert.equal(empty.name,'');assert.equal(empty.email,'');assert.equal(empty.custom.length,0);
+console.log('PASS: legacy account/card/preset migration, unknown field preservation, selected-only share snapshot, received-card conversion, photo validation, empty new-account defaults.');
