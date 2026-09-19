@@ -20,11 +20,11 @@ DamDa는 **만나는 사람과 상황에 맞춰, 필요한 정보만 골라 공�
 
 운영용 구성은 **Supabase Auth + PostgreSQL**을 사용합니다.
 
-이메일·비밀번호 회원가입과 로그인, 이메일 인증 안내, 인증 메일 재전송, 비밀번호 재설정, 로그아웃을 제공합니다. 프로필·명함함·프리셋은 계정별로 저장하고, DB의 행 수준 보안(RLS)으로 다른 사용자의 비공개 데이터 접근을 제한합니다.
+이메일·비밀번호 회원가입과 로그인, 비밀번호 재설정, 로그아웃을 제공합니다. 프로필·명함함·프리셋은 계정별로 저장하고, DB의 행 수준 보안(RLS)으로 다른 사용자의 비공개 데이터 접근을 제한합니다.
 
 공유 링크에는 전체 프로필이 아니라 **직접 선택한 공개 정보의 사본**만 연결됩니다. 링크를 아는 사람은 로그인 없이 볼 수 있습니다. 프로필을 수정해도 이전에 공유한 사본은 바뀌지 않습니다.
 
-> 운영 화면은 GitHub Pages, 실제 인증과 데이터 저장은 Supabase를 사용합니다. 로컬 개발 서버의 체험 로그인은 실제 회원 계정과 별개입니다. 이메일 인증·비밀번호 재설정 메일에는 Supabase의 SMTP 및 허용 Redirect URL 설정이 필요합니다.
+> 운영 화면은 GitHub Pages, 실제 인증과 데이터 저장은 Supabase를 사용합니다. 로컬 개발 서버의 체험 로그인은 실제 회원 계정과 별개입니다. 비밀번호 재설정 메일에는 Supabase의 SMTP 및 허용 Redirect URL 설정이 필요합니다.
 
 ## 기술 구성
 
@@ -59,7 +59,8 @@ npm start
 
 1. 사용할 Supabase 프로젝트의 SQL Editor에서 [DB 확장 스크립트](supabase/migrations/202609190001_damda.sql)를 한 번 실행합니다.
 2. Authentication의 Site URL과 허용 Redirect URL에 https://rlawlgns02.github.io/DamDa/ 를 등록합니다. 비밀번호 재설정을 위해 https://rlawlgns02.github.io/DamDa/?auth=recovery 도 허용합니다.
-3. 이메일 확인 설정과 이메일 발송 서비스(SMTP)를 운영 정책에 맞게 설정합니다.
+3. Authentication의 이메일 제공자 설정에서 Confirm email을 끕니다. 가입 즉시 로그인합니다. 비밀번호 재설정 메일을 사용하려면 SMTP를 연결합니다.
+4. 새 비밀번호는 8자 이상, 대문자·소문자·숫자·특수문자 중 2종류 이상이어야 합니다. 화면에 약함·중간·강력 표시를 제공합니다. Supabase의 최소 비밀번호 길이도 8로 설정합니다.
 4. [공개 연결 설정](config/supabase.json)의 프로젝트 URL과 publishable key를 확인합니다. 현재 연결 대상은 사용자 소유의 xpahxsmlzhfnfzqlefzc 프로젝트입니다.
 
 **publishable/anon 키는 공개 클라이언트 설정입니다. secret 키, service_role 키, DB 비밀번호는 클라이언트 코드나 저장소에 넣지 않습니다.**
