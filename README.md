@@ -53,7 +53,7 @@ npm ci
 npm start
 ~~~
 
-http://127.0.0.1:4173/DamDa/ 에 접속합니다. GitHub Pages와 동일한 빌드·경로·CSP를 사용합니다.
+터미널의 `Preview:` 주소에 접속합니다. 기본은 http://127.0.0.1:4173/DamDa/ 이며 사용 중이면 다음 빈 포트를 선택합니다. GitHub Pages와 동일한 빌드·경로·CSP를 사용합니다.
 
 설정된 Supabase에 실제로 연결됩니다. 회원가입 후 로그인하세요. 목업의 **admin / 1234** 체험 로그인은 운영 화면에서 제거했습니다. `dist/` 수정 후 `npm run build:pages`를 실행하고 새로고침합니다.
 

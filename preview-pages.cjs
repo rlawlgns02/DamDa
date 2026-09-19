@@ -22,7 +22,9 @@ async function main(){
    const data=await fs.readFile(real);res.writeHead(200,{'Content-Type':mime[path.extname(real)]||'application/octet-stream'});res.end(req.method==='HEAD'?undefined:data);
   }catch{res.writeHead(404);res.end('Not found');}
  });
- server.on('error',e=>{console.error(e.message);process.exitCode=1;});
- server.listen(4173,'127.0.0.1',()=>console.log('Preview: http://127.0.0.1:4173/DamDa/\nUses configured Supabase. After editing dist/, run npm run build:pages and refresh.'));
+ let port=4173;
+ server.on('error',e=>{if(e.code==='EADDRINUSE'&&port<4193){port++;server.listen(port,'127.0.0.1');return;}console.error(e.message);process.exitCode=1;});
+ server.on('listening',()=>console.log('Preview: http://127.0.0.1:'+port+'/DamDa/\nUses configured Supabase. After editing dist/, run npm run build:pages and refresh.'));
+ server.listen(port,'127.0.0.1');
 }
 main().catch(e=>{console.error(e.message);process.exitCode=1;});
