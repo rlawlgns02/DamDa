@@ -12,3 +12,5 @@ assert.throws(()=>model.fromSnapshot({name:'bad',fields:[],photo:'https://tracke
 assert.throws(()=>model.fromSnapshot({name:'bad',fields:[{label:1,value:'x'}]}),/Invalid/);
 const empty=model.empty();assert.equal(empty.name,'');assert.equal(empty.email,'');assert.equal(empty.custom.length,0);
 console.log('PASS: legacy account/card/preset migration, unknown field preservation, selected-only share snapshot, received-card conversion, photo validation, empty new-account defaults.');
+
+const welcome=model.welcomeCard();assert.equal(welcome.id,'damda-welcome-v1');assert.equal(welcome.tab,'미분류');assert.equal(model.fromSnapshot(welcome.data).name,'DamDa');assert(welcome.data.back.message.includes('명함함'));const fresh={profile:model.toProfile(model.empty()),organizer:{cards:[welcome],tabs:['미분류'],presets:[]}};const welcomeDecoded=model.decode(fresh);assert.deepEqual(model.encode(welcomeDecoded.model,welcomeDecoded.collection,[],['미분류'],fresh).organizer.cards,[welcome]);assert.equal(model.decode({...fresh,organizer:{...fresh.organizer,cards:[]}}).collection.length,0);console.log('PASS: welcome card snapshot, persistence and no reseeding during decode.');

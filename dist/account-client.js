@@ -10,7 +10,7 @@
   if(state.user?.id===user.id&&state.account){state.phase='ready';emit();return;}
   reset();const ticket=epoch;state.user=user;state.phase='loading';emit();
   try{let r=await client.from('damda_accounts').select('profile,organizer,revision').eq('user_id',user.id).maybeSingle();if(r.error)throw r.error;
-   if(!r.data){const m=DamDaModel.empty();m.name=user.user_metadata?.display_name||'';m.email=user.email||'';const fresh={user_id:user.id,profile:DamDaModel.toProfile(m),organizer:{cards:[],tabs:['미분류'],presets:[]},revision:0};r=await client.from('damda_accounts').insert(fresh).select('profile,organizer,revision').single();if(r.error?.code==='23505')r=await client.from('damda_accounts').select('profile,organizer,revision').eq('user_id',user.id).single();if(r.error)throw r.error;}
+   if(!r.data){const m=DamDaModel.empty();m.name=user.user_metadata?.display_name||'';m.email=user.email||'';const fresh={user_id:user.id,profile:DamDaModel.toProfile(m),organizer:{cards:[DamDaModel.welcomeCard()],tabs:['미분류'],presets:[]},revision:0};r=await client.from('damda_accounts').insert(fresh).select('profile,organizer,revision').single();if(r.error?.code==='23505')r=await client.from('damda_accounts').select('profile,organizer,revision').eq('user_id',user.id).single();if(r.error)throw r.error;}
    DamDaModel.decode(r.data);if(ticket!==epoch)return;state.account=r.data;state.phase='ready';state.error='';emit();
   }catch(e){if(ticket!==epoch)return;state.phase='error';state.error='계정 정보를 불러오지 못했습니다. 다시 시도해 주세요.';emit();}
  }

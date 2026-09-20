@@ -1,0 +1,11 @@
+'use strict';
+const vm=require('node:vm'),fs=require('node:fs'),assert=require('node:assert/strict');
+const model=require('./dist/card-model.js');
+(async()=>{let row=null,inserts=0;const user={id:'new-user',email:'new@example.com',user_metadata:{display_name:'새 사용자'}};
+ const client={from(){return {select(){return this;},eq(){return this;},async maybeSingle(){return {data:row};},insert(value){inserts++;row=structuredClone(value);return this;},async single(){return {data:row};}};},auth:{async signInWithPassword(){return {data:{user}};},async signOut(){return {};}}};
+ const sandbox={DamDaCloudConfig:{url:'https://fixture.supabase.co',key:'test'},supabase:{createClient:()=>client},DamDaModel:model,URL,setTimeout,clearTimeout,structuredClone,location:{origin:'http://localhost',pathname:'/'},addEventListener(){}};sandbox.window=sandbox;vm.runInNewContext(fs.readFileSync('dist/account-client.js','utf8'),sandbox);
+ const account=sandbox.DamDaAccount;await account.login('','');assert.equal(account.state.phase,'ready');assert.equal(row.organizer.cards.length,1);assert.equal(row.organizer.cards[0].id,'damda-welcome-v1');assert.equal(row.profile.name,'새 사용자');
+ await account.logout();await account.login('','');assert.equal(inserts,1);assert.equal(row.organizer.cards.length,1);
+ row.organizer.cards=[];await account.logout();await account.login('','');assert.equal(row.organizer.cards.length,0);assert.equal(inserts,1);
+ console.log('PASS welcome account: seeded at creation, no duplicates on login, deleted card stays deleted.');
+})().catch(e=>{console.error(e);process.exitCode=1;});

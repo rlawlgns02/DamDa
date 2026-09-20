@@ -5,6 +5,8 @@
  const text=(v,n=100)=>typeof v==='string'?v.slice(0,n):'';
  const photo=v=>typeof v==='string'&&/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/]+={0,2}$/.test(v)?v:'';
  const empty=()=>({name:'',nickname:'',identity:'name',showName:true,role:'',company:'',email:'',phone:'',website:'',instagram:'',visible:['role','company','email'],photo:'',photoShape:'square',photoSize:'medium',color:'paper',layout:'editorial',backTitle:'Nice to meet you.',backMessage:'',backPattern:'grid',backColor:'ink',custom:[]});
+ // Seed only when creating a workspace, never when decoding a saved collection.
+ function welcomeCard(){const m={...empty(),name:'DamDa',role:'당신의 첫 연결을 환영합니다',company:'나를 담다. 연결을 만들다.',visible:['role','company'],color:'lime',backTitle:'반가워요, DamDa입니다.',backMessage:'내 명함을 만들고, 소중한 만남을 명함함에 담아 보세요.\n편집 모드에서 분류를 옮기고, 삭제 모드에서 명함을 정리할 수 있어요.',backColor:'ink',backPattern:'orbits'};return {id:'damda-welcome-v1',tab:'미분류',savedAt:new Date().toISOString(),data:snapshot(m)};}
  function fromProfile(p={}){
   const m=empty(),known=new Set();m.name=text(p.name,30);m.nickname=text(p.nickname,30);m.identity=p.nameMode==='nickname'?'nickname':'name';m.showName=p.showName!==false;m.visible=[];
   const items=Array.isArray(p.fields)?p.fields:[];
@@ -18,5 +20,5 @@
  function fromSnapshot(p){if(!p||typeof p.name!=='string'||!Array.isArray(p.fields)||p.fields.length>100||!p.fields.every(f=>typeof f.label==='string'&&typeof f.value==='string'))throw Error('Invalid card');if(p.photo&&!photo(p.photo))throw Error('Invalid card photo');return fromProfile(p);}
  function decode(account){const o=account.organizer||{};if(!Array.isArray(o.cards)||!Array.isArray(o.tabs)||!Array.isArray(o.presets))throw Error('Invalid account');return {model:fromProfile(account.profile),collection:o.cards.map(c=>({...fromSnapshot(c.data),id:c.id,group:c.tab,savedAt:c.savedAt,_raw:c})),presets:o.presets.map(p=>({...p,visible:Object.keys(fieldMap).filter(k=>p.labels?.includes(fieldMap[k]))})),tabs:[...o.tabs]};}
  function encode(model,collection,presets,tabs,original){return {profile:toProfile(model,original.profile),organizer:{...original.organizer,tabs:[...new Set(['미분류',...tabs,...collection.map(c=>c.group)])],cards:collection.map(c=>({...c._raw,id:c.id,tab:c.group,savedAt:c.savedAt||c._raw?.savedAt||new Date().toISOString(),data:c._raw?.data||snapshot(c)})),presets:presets.map(p=>({id:p.id||'preset-'+crypto.randomUUID(),name:p.name,labels:p.labels||p.visible.map(k=>fieldMap[k]).filter(Boolean),...(p.nameMode?{nameMode:p.nameMode}:{}),...(typeof p.showName==='boolean'?{showName:p.showName}:{})}))}};}
- const api={fieldMap,empty,fromProfile,toProfile,snapshot,fromSnapshot,decode,encode};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DamDaModel=api;
+ const api={fieldMap,empty,welcomeCard,fromProfile,toProfile,snapshot,fromSnapshot,decode,encode};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.DamDaModel=api;
 })(typeof globalThis!=='undefined'?globalThis:this);
