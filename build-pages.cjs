@@ -8,7 +8,12 @@ async function buildPages(){
  let publicKey=config.key.startsWith('sb_publishable_');
  if(config.key.startsWith('eyJ')){try{publicKey=JSON.parse(Buffer.from(config.key.split('.')[1],'base64url')).role==='anon';}catch{publicKey=false;}}
  if(!publicKey)throw Error('Only a Supabase publishable or anon key may be used in a browser build.');
- const out=path.resolve(__dirname,'_site');await fs.mkdir(out,{recursive:true});await fs.cp(path.join(__dirname,'dist'),out,{recursive:true});
+ const out=path.resolve(__dirname,'_site');
+ // Only this fixed generated directory is replaced; source and legacy test assets stay intact.
+ if(path.dirname(out)!==path.resolve(__dirname))throw Error('Invalid build output directory.');
+ await fs.rm(out,{recursive:true,force:true});await fs.mkdir(out,{recursive:true});
+ const assets=['index.html','design.css','mark.svg','icon.svg','lab-sans.woff2','font-LICENSE.txt','card-export.js','card-model.js','account-client.js','modern-app.js','production-ui.js','mockup.html','mockup.js','mockup.css','damda-logo.png'];
+ await Promise.all(assets.map(file=>fs.copyFile(path.join(__dirname,'dist',file),path.join(out,file))));
  const index=await fs.readFile(path.join(out,'index.html'),'utf8');
  const csp="default-src 'self'; script-src 'self'; connect-src 'self' "+url.origin+"; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; object-src 'none'; base-uri 'self'; form-action 'self'";
  await fs.writeFile(path.join(out,'index.html'),index.replace('<html lang="ko">','<html lang="ko" data-hosting="cloud">').replace('<head>','<head>\n<meta name="referrer" content="no-referrer"><meta http-equiv="Content-Security-Policy" content="'+csp+'">').replace('<!-- APP_SCRIPTS -->',"<script src=\"runtime-config.js\" defer></script><script src=\"supabase-browser.js\" defer></script><script src=\"qr-browser.js\" defer></script><script src=\"card-export.js\" defer></script><script src=\"card-model.js\" defer></script><script src=\"account-client.js\" defer></script><script src=\"modern-app.js\" defer></script><script src=\"production-ui.js\" defer></script>"));

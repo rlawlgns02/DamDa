@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "node preview-pages.cjs",
     "start": "node preview-pages.cjs",
-    "check": "node --check dist/app.js && node --check dist/sharing-ui.js && node --check dist/card-export.js && node --check card-store.cjs && node --check server.cjs && node --check dist/organizer.js && node --check dist/enhancements.js && node --check dist/i18n.js && node --check dist/mockup.js && node --check dist/workspace-view.js && node --check dist/presets-ui.js && node --check dist/motion.js && node --check dist/studio-ui.js && node --check dist/cloud-auth.js && node --check build-pages.cjs && node --check preview-pages.cjs && node --check dist/card-model.js && node --check dist/account-client.js && node --check dist/modern-app.js && node --check dist/production-ui.js",
-    "test": "node verify-model.cjs",
+    "check": "node --check dist/app.js && node --check dist/sharing-ui.js && node --check dist/card-export.js && node --check card-store.cjs && node --check server.cjs && node --check dist/organizer.js && node --check dist/enhancements.js && node --check dist/i18n.js && node --check dist/mockup.js && node --check dist/workspace-view.js && node --check dist/presets-ui.js && node --check dist/motion.js && node --check dist/studio-ui.js && node --check build-pages.cjs && node --check preview-pages.cjs && node --check dist/card-model.js && node --check dist/account-client.js && node --check dist/modern-app.js && node --check dist/production-ui.js",
+    "test": "node verify-model.cjs && node verify-account.cjs",
     "test:browser": "node verify-production.cjs",
     "build:pages": "node build-pages.cjs",
     "test:cloud": "node verify-production.cjs",

@@ -46,7 +46,12 @@ function createServer({directory=path.join(__dirname,'data','cards')}={}) {
       const file=path.resolve(root,'.'+(pathname==='/'?'/index.html':pathname));
       if(!file.startsWith(root+path.sep)){res.writeHead(403).end();return;}
       try {
-        const bytes=await fs.readFile(file);
+        let bytes=await fs.readFile(file);
+        if(file===path.join(root,'index.html')){
+          const styles=['style.css','enhancements.css','workspace.css','motion.css','studio.css'];
+          const scripts=['organizer.js','i18n.js','sharing-ui.js','card-export.js','app.js','enhancements.js','workspace-view.js','presets-ui.js','motion.js','studio-ui.js'];
+          bytes=Buffer.from(bytes.toString('utf8').replace('<link rel="stylesheet" href="design.css">',styles.map(src=>'<link rel="stylesheet" href="'+src+'">').join('')).replace('<!-- APP_SCRIPTS -->',scripts.map(src=>'<script src="'+src+'" defer></script>').join('')).replace(' popover="manual"',''));
+        }
         res.writeHead(200,{'Content-Type':({'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'})[path.extname(file)]||'application/octet-stream','Cache-Control':'no-cache'}).end(req.method==='HEAD'?undefined:bytes);
       } catch {res.writeHead(404).end('Not found');}
     }catch(error){console.error('DamDa request failed:',error.code||error.message);if(!res.headersSent)json(500,{error:'저장 공간이나 서버 상태를 확인하고 다시 시도해 주세요.'});else res.end();}
